@@ -16,6 +16,9 @@ sd<!DOCTYPE html>
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     user-select: none;
   }
+  #playAgain {
+    visibility: hidden;
+  }
 
   #tetris {
     border: 4px solid #222;
@@ -236,6 +239,7 @@ sd<!DOCTYPE html>
       alert("Game Over! Your score: " + score);
       clearInterval(timerId);
       $playAgain.show();
+      $playAgain.prop('disabled', false);
       return;
     }
     draw();
