@@ -53,31 +53,6 @@
   #scoreboard h2 {
     margin: 0 0 10px;
   }
-
-    button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background: linear-gradient(145deg, #1e1e1e, #2c2c2c);
-  border: 2px solid #444;
-  color: #0ff;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0, 255, 255, 0.2);
-}
-
-#button:hover {
-  background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px rgba(0, 255, 255, 0.4);
-}
-
-#button:active {
-  transform: scale(0.98);
-  box-shadow: 0 2px 5px rgba(0, 255, 255, 0.2);
-}
 </style>
 </head>
 <body>
@@ -92,7 +67,7 @@
       <p>↓ Move Down</p>
       <p>↑ Rotate</p>
       <p>Space Drop</p>
-      <button id="playAgain" onclick="playAgain()">Play Again</button>
+      <button id="playAgain" onclick="playAgain">Play Again</button>
     </div>
   </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
