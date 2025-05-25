@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+sd<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -67,9 +67,10 @@
       <p>↓ Move Down</p>
       <p>↑ Rotate</p>
       <p>Space Drop</p>
+      <button id="playAgain" disabled="true">Play Again</button>
     </div>
   </div>
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 (() => {
   const width = 10;
@@ -149,6 +150,7 @@
   let currentType;
   let timerId;
   let score = 0;
+  const $playAgain = $("#playAgain");
 
   // Randomly select a tetromino
   function randomTetromino() {
@@ -233,6 +235,7 @@
     if (collision()) {
       alert("Game Over! Your score: " + score);
       clearInterval(timerId);
+      $playAgain.show();
       return;
     }
     draw();
