@@ -16,9 +16,6 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     user-select: none;
   }
-  #playAgain {
-    visibility: hidden;
-  }
 
   #tetris {
     border: 4px solid #222;
@@ -70,7 +67,7 @@
       <p>↓ Move Down</p>
       <p>↑ Rotate</p>
       <p>Space Drop</p>
-      <button id="playAgain" disabled="true">Play Again</button>
+      <button id="playAgain">Play Again</button>
     </div>
   </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -154,6 +151,7 @@
   let timerId;
   let score = 0;
   const $playAgain = $("#playAgain");
+  $playAgain.hide();
 
   // Randomly select a tetromino
   function randomTetromino() {
