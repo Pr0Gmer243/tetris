@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tetris</title>
+<style>
+  body {
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    user-select: none;
+  }
+
+  #tetris {
+    border: 4px solid #222;
+    background: #222;
+    display: grid;
+    grid-template-columns: repeat(10, 30px);
+    grid-template-rows: repeat(20, 30px);
+    gap: 2px;
+  }
+
+  .cell {
+    width: 30px;
+    height: 30px;
+    background: #111;
+    border-radius: 3px;
+  }
+
+  .filled {
+    background-color: #0ff;
+    box-shadow: 0 0 5px #0ff;
+  }
+
+  .I { background-color: #00f0f0; box-shadow: 0 0 10px #00f0f0; }
+  .J { background-color: #0000f0; box-shadow: 0 0 10px #0000f0; }
+  .L { background-color: #f0a000; box-shadow: 0 0 10px #f0a000; }
+  .O { background-color: #f0f000; box-shadow: 0 0 10px #f0f000; }
+  .S { background-color: #00f000; box-shadow: 0 0 10px #00f000; }
+  .T { background-color: #a000f0; box-shadow: 0 0 10px #a000f0; }
+  .Z { background-color: #f00000; box-shadow: 0 0 10px #f00000; }
+
+  #scoreboard {
+    margin-left: 20px;
+    font-size: 20px;
+  }
+  #scoreboard h2 {
+    margin: 0 0 10px;
+  }
+</style>
+</head>
+<body>
+  <div style="display: flex;">
+    <div id="tetris"></div>
+    <div id="scoreboard">
+      <h2>Score</h2>
+      <div id="score">0</div>
+      <h2>Controls</h2>
+      <p>← Move Left</p>
+      <p>→ Move Right</p>
+      <p>↓ Move Down</p>
+      <p>↑ Rotate</p>
+      <p>Space Drop</p>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const width = 10;
+  const height = 20;
+  const grid = [];
+  const tetris = document.getElementById('tetris');
+  const scoreDisplay = document.getElementById('score');
+
+  // Create grid cells
+  for (let i = 0; i < width * height; i++) {
+    const cell = document.createElement('div');
+    cell.classList.add('cell');
+    tetris.appendChild(cell);
+    grid.push(cell);
+  }
+
+  // Tetromino shapes and rotations
+  const tetrominoes = {
+    I: [
+      [1, width+1, width*2+1, width*3+1],
+      [width, width+1, width+2, width+3],
+      [1, width+1, width*2+1, width*3+1],
+      [width, width+1, width+2, width+3]
+    ],
+    J: [
+      [0, width, width*2, width*2+1],
+      [width, width+1, width+2, 2],
+      [0, 1, width+1, width*2+1],
+      [width, width*2, width*2+1, width*2+2]
+    ],
+    L: [
+      [1, width+1, width*2+1, width*2],
+      [width, width+1, width+2, width*2+2],
+      [1, width+1, width*2+1, 0],
+      [width, width*2, width*2+1, width*2+2]
+    ],
+    O: [
+      [0, 1, width, width+1],
+      [0, 1, width, width+1],
+      [0, 1, width, width+1],
+      [0, 1, width, width+1]
+    ],
+    S: [
+      [1, 2, width, width+1],
+      [0, width, width+1, width*2+1],
+      [1, 2, width, width+1],
+      [0, width, width+1, width*2+1]
+    ],
+    T: [
+      [1, width, width+1, width+2],
+      [1, width+1, width+2, width*2+1],
+      [width, width+1, width+2, width*2+1],
+      [1, width, width+1, width*2+1]
+    ],
+    Z: [
+      [0, 1, width+1, width+2],
+      [2, width+1, width+2, width*2+1],
+      [0, 1, width+1, width+2],
+      [2, width+1, width+2, width*2+1]
+    ],
+  };
+
+  const colors = {
+    I: 'I',
+    J: 'J',
+    L: 'L',
+    O: 'O',
+    S: 'S',
+    T: 'T',
+    Z: 'Z',
+  };
+
+  let currentPosition = 4;
+  let currentRotation = 0;
+  let currentTetromino;
+  let currentShape;
+  let currentType;
+  let timerId;
+  let score = 0;
+
+  // Randomly select a tetromino
+  function randomTetromino() {
+    const types = Object.keys(tetrominoes);
+    const rand = types[Math.floor(Math.random() * types.length)];
+    currentType = rand;
+    currentShape = tetrominoes[rand][0];
+    currentRotation = 0;
+  }
+
+  function draw() {
+    currentShape.forEach(index => {
+      grid[currentPosition + index].classList.add('filled', colors[currentType]);
+    });
+  }
+
+  function undraw() {
+    currentShape.forEach(index => {
+      grid[currentPosition + index].classList.remove('filled', colors[currentType]);
+    });
+  }
+
+  function moveDown() {
+    undraw();
+    currentPosition += width;
+    if (collision()) {
+      currentPosition -= width;
+      freeze();
+      return;
+    }
+    draw();
+  }
+
+  function collision() {
+    return currentShape.some(index => {
+      let pos = currentPosition + index;
+      return (
+        pos >= width * height ||
+        grid[pos].classList.contains('taken')
+      );
+    });
+  }
+
+  function freeze() {
+    currentShape.forEach(index => {
+      grid[currentPosition + index].classList.add('taken');
+      grid[currentPosition + index].classList.remove('filled', colors[currentType]);
+      grid[currentPosition + index].classList.add(colors[currentType]);
+    });
+    clearLines();
+    spawnTetromino();
+  }
+
+  function clearLines() {
+    for (let row = 0; row < height; row++) {
+      let start = row * width;
+      let rowFilled = true;
+      for (let i = 0; i < width; i++) {
+        if (!grid[start + i].classList.contains('taken')) {
+          rowFilled = false;
+          break;
+        }
+      }
+      if (rowFilled) {
+        score += 10;
+        scoreDisplay.textContent = score;
+        for (let i = start; i < start + width; i++) {
+          grid[i].className = 'cell';
+        }
+        const removed = grid.splice(start, width);
+        grid.unshift(...removed);
+        // Rebuild the grid display
+        grid.forEach(cell => tetris.appendChild(cell));
+      }
+    }
+  }
+
+  function spawnTetromino() {
+    randomTetromino();
+    currentPosition = 4;
+    currentShape = tetrominoes[currentType][currentRotation];
+    if (collision()) {
+      alert("Game Over! Your score: " + score);
+      clearInterval(timerId);
+      return;
+    }
+    draw();
+  }
+
+  function moveLeft() {
+    undraw();
+    const atLeftEdge = currentShape.some(index => (currentPosition + index) % width === 0);
+    if (!atLeftEdge) currentPosition -= 1;
+    if (collision()) currentPosition += 1;
+    draw();
+  }
+
+  function moveRight() {
+    undraw();
+    const atRightEdge = currentShape.some(index => (currentPosition + index) % width === width - 1);
+    if (!atRightEdge) currentPosition += 1;
+    if (collision()) currentPosition -= 1;
+    draw();
+  }
+
+  function rotate() {
+    undraw();
+    currentRotation++;
+    if (currentRotation === tetrominoes[currentType].length) currentRotation = 0;
+    currentShape = tetrominoes[currentType][currentRotation];
+    // Wall kick
+    if (collision()) {
+      if (currentPosition % width > 5) {
+        currentPosition -= 1;
+        if (collision()) currentPosition += 1;
+      } else {
+        currentPosition += 1;
+        if (collision()) currentPosition -= 1;
+      }
+    }
+    draw();
+  }
+
+  function drop() {
+    undraw();
+    while (!collision()) {
+      currentPosition += width;
+    }
+    currentPosition -= width;
+    draw();
+    freeze();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (!timerId) return;
+    if (e.key === 'ArrowLeft') {
+      moveLeft();
+    } else if (e.key === 'ArrowRight') {
+      moveRight();
+    } else if (e.key === 'ArrowDown') {
+      moveDown();
+    } else if (e.key === 'ArrowUp') {
+      rotate();
+    } else if (e.key === ' ') {
+      e.preventDefault();
+      drop();
+    }
+  });
+
+  // Start game
+  spawnTetromino();
+  timerId = setInterval(() => {
+    moveDown();
+  }, 600);
+})();
+</script>
+</body>
+</html>
