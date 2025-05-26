@@ -100,7 +100,6 @@
   const tetris = document.getElementById('tetris');
   const scoreDisplay = document.getElementById('score');
 
-  // Create grid cells
   for (let i = 0; i < width * height; i++) {
     const cell = document.createElement('div');
     cell.classList.add('cell');
@@ -108,7 +107,6 @@
     grid.push(cell);
   }
 
-  // Tetromino shapes and rotations
   const tetrominoes = {
     I: [
       [1, width+1, width*2+1, width*3+1],
@@ -174,7 +172,6 @@
   const $playAgain = $("#playAgain");
   $playAgain.hide();
 
-  // Randomly select a tetromino
   function randomTetromino() {
     const types = Object.keys(tetrominoes);
     const rand = types[Math.floor(Math.random() * types.length)];
@@ -244,7 +241,6 @@
         }
         const removed = grid.splice(start, width);
         grid.unshift(...removed);
-        // Rebuild the grid display
         grid.forEach(cell => tetris.appendChild(cell));
       }
     }
@@ -281,21 +277,23 @@
   }
 
   function rotate() {
-    undraw();
-    currentRotation++;
-    if (currentRotation === tetrominoes[currentType].length) currentRotation = 0;
-    currentShape = tetrominoes[currentType][currentRotation];
-    // Wall kick
-    if (collision()) {
-      if (currentPosition % width > 5) {
-        currentPosition -= 1;
-        if (collision()) currentPosition += 1;
-      } else {
-        currentPosition += 1;
-        if (collision()) currentPosition -= 1;
-      }
+    const nextRotation = (currentRotation + 1) % tetrominoes[currentType].length;
+    const nextShape = tetrominoes[currentType][nextRotation];
+
+    const isValidRotation = nextShape.every(index => {
+      const pos = currentPosition + index;
+      const col = pos % width;
+      if (pos < 0 || pos >= width * height) return false;
+      if (grid[pos].classList.contains('taken')) return false;
+      return true;
+    });
+
+    if (isValidRotation) {
+      undraw();
+      currentRotation = nextRotation;
+      currentShape = nextShape;
+      draw();
     }
-    draw();
   }
 
   function drop() {
@@ -324,7 +322,6 @@
     }
   });
 
-  // Start game
   spawnTetromino();
   timerId = setInterval(() => {
     moveDown();
